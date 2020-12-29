@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  node:
+    image: node:10
+    container_name: node
+    tty: true
+    working_dir: /usr/src/app
+    volumes:
+      - ./src:/usr/src/app
+    ports:
+      - "3000:3000"
