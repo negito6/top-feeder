@@ -198,8 +198,13 @@ class World {
     let rows = [];
     for (let z = 0; z < this.z; z++) { 
       let cols = [];
-      for (let x = - this.x; x <= this.x; x++) { 
-        cols.push('<td id="cell_' + this.cellId(x, z) + '"></td>');
+      for (let x = - this.x; x <= this.x; x++) {
+        let cell = this.cellAt(x, z);
+        if (cell) {
+          cols.push('<td id="' + cell.domId() + '"></td>');
+        } else {
+          console.log(['Not found cell', x, z]);
+        }
       }
       rows.push('<tr>' + cols.join('') + '</tr>');
     }
