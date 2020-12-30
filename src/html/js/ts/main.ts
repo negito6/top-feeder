@@ -102,7 +102,7 @@ class Cell {
   fish: Fish[];
   feed: Feed;
   x: number;
-  z: number; 
+  z: number;
 
   constructor(x: number, z: number) {
     this.fish = [];
@@ -152,7 +152,7 @@ class World {
     this.timer = 0;
 
     for (let x = - this.x; x <= this.x; x++) {
-    for (let z = 0; z < this.z; z++) { 
+    for (let z = 0; z < this.z; z++) {
       this.cells[x+"_"+z] = new Cell(x, z);
     }
     }
@@ -203,7 +203,7 @@ class World {
       if (rightCell) rightCell.mergeFeed(cell.feed.defused());
       const leftCell = future.cellAt(cell.x - 1, cell.z);
       if (leftCell) leftCell.mergeFeed(cell.feed.defused());
-      cell.removeFeed(); 
+      cell.removeFeed();
     });
 
     const feed = this.feedQueue.shift();
@@ -215,7 +215,7 @@ class World {
     }
 
     this.eachCell((world: World, cell: Cell) => {
-      cell.mergeFeed(future.cellAt(cell.x, cell.z).feed); 
+      cell.mergeFeed(future.cellAt(cell.x, cell.z).feed);
     });
   }
   updateFish() {
@@ -244,7 +244,7 @@ class World {
 
   // TOOD:
   eachCell(f: any) {
-    for (let z = 0; z < this.z; z++) { 
+    for (let z = 0; z < this.z; z++) {
       for (let x = - this.x; x <= this.x; x++) {
         f(this, this.cellAt(x, z));
       }
@@ -264,7 +264,7 @@ class World {
 
   render() {
     let rows = [];
-    for (let z = 0; z < this.z; z++) { 
+    for (let z = 0; z < this.z; z++) {
       let cols = [];
       for (let x = - this.x; x <= this.x; x++) {
         let cell = this.cellAt(x, z);
