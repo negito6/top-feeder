@@ -142,13 +142,6 @@ class World {
   survival() {
   }
   moveFeed() {
-    const feed = this.feedQueue.shift();    
-    if (feed && feed.present()) {
-      // TODO:
-      const nextCell = this.cellAt(feed.cell.x, feed.cell.z + feed.vz);
-      feed.cell.removeFeed(); 
-      nextCell.mergeFeed(feed); 
-    }
     const future = new World(this.x, this.z);
     this.eachCell((world: World, cell: Cell) => {
       const currentFeed = cell.feed;
@@ -162,6 +155,15 @@ class World {
       if (leftCell) leftCell.mergeFeed(cell.feed.defused());
       cell.removeFeed(); 
     });
+
+    const feed = this.feedQueue.shift();
+    if (feed && feed.present()) {
+      // TODO:
+      const droppedCell = future.cellAt(feed.cell.x, feed.cell.z + feed.vz);
+      feed.cell.removeFeed();
+      droppedCell.mergeFeed(feed);
+    }
+
     this.eachCell((world: World, cell: Cell) => {
       cell.mergeFeed(future.cellAt(cell.x, cell.z).feed); 
     });
