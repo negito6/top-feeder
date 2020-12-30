@@ -1,10 +1,12 @@
 class Fish {
+  world: World;
   cell: Cell;
   size: number;
   appetite: number;
   free: boolean;
 
-  constructor(cell: Cell) {
+  constructor(world: World, cell: Cell) {
+    this.world = world;
     this.cell = cell;
     this.size = 1; // to 4
     this.appetite = 100;
@@ -13,11 +15,26 @@ class Fish {
     cell.fish.push(this);
   }
 
-  update() {
-    this.move();
+  update(future: World) {
+    this.move(future);
     this.eat();
   }
-  move() {
+  move(future: World) {
+    const d = [
+      [ 0, -1],
+      [ 0,  1],
+      [-1,  0],
+      [ 1,  0],
+    ];
+    const movable = [[0, 0]];
+    for (let i = 0, l = d.length; i < l; i++) {
+      if (future.cellAt(this.cell.x + d[i][0], this.cell.z + d[i][1])) {
+        movable.push(d[i]);
+      }
+    }
+    const rand = parseInt((Math.random() * movable.length).toString());
+    this.cell = this.world.cellAt(this.cell.x + movable[rand][0], this.cell.z + movable[rand][1]);
+    future.cellAt(this.cell.x, this.cell.z).addFish(this);
   }
   fcr() {
     return Math.sqrt(this.size);
@@ -101,7 +118,9 @@ class Cell {
   mergeFeed(feed: Feed) {
     this.feed.merge(feed);
   }
-
+  addFish(fish: Fish) {
+    this.fish.push(fish);
+  }
   domId() {
     return 'cell_' + this.x + '_' + this.z;
   }
@@ -112,7 +131,7 @@ class Cell {
     if (td) {
       td.style.background = 'rgba(128,64,64,' + (this.feed.amount / maxFeedAtCell).toString() + ')';
       // td.innerHTML = this.feed.present() ? this.feed.amount.toString() : '';
-      if (this.fish.length > 0) td.innerHTML = this.fish[0].html();
+      td.innerHTML = this.fish.map((f) => f.html()).join("");
     }
   }
 }
@@ -200,10 +219,14 @@ class World {
     });
   }
   updateFish() {
+    let future = this.future();
     this.eachCell((world: World, cell: Cell) => {
       for (let i = 0, l = cell.fish.length; i < l; i++) {
-        cell.fish[i].update();
+        cell.fish[i].update(future);
       }
+    });
+    this.eachCell((world: World, cell: Cell) => {
+      cell.fish = future.cellAt(cell.x, cell.z).fish;
     });
   }
 
@@ -285,6 +308,7 @@ class Feeder {
 }
 
 const world = new World(10, 20);
+world.addFish();
 world.render();
 world.start(200);
 const feeder = new Feeder(world);
