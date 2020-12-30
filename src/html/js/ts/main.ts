@@ -105,24 +105,6 @@ class World {
       this.cells[x+"_"+z] = new Cell(x, z);
     }
     }
-    this.feedQueue = [
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 128),
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 128),
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 128),
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 128),
-      new Feed(new Cell(0, -1), 0),
-      new Feed(new Cell(0, -1), 128),
-      new Feed(new Cell(0, -1), 0),
-    ];
   }
 
   start() {
@@ -131,7 +113,7 @@ class World {
       world.time++;
       console.log('time');
       world.process();
-    }, 3000);
+    }, 500);
   }
   process() {
     this.survival();
@@ -251,3 +233,5 @@ class Feeder {
 const world = new World(10, 20);
 world.render();
 world.start();
+const feeder = new Feeder(world);
+feeder.feed(192, 30, 2, 2);
