@@ -13,7 +13,7 @@ class Fish {
     this.world = world;
     this.cell = cell;
     this.size = 1; // to 4
-    this.appetite = 100;
+    this.appetite = 80;
     this.free = true;
     this.x = Math.random();
     this.z = Math.random();
@@ -127,7 +127,7 @@ class Fish {
     const sizeMax = 2;
     if (this.cell.feed.present()) {
       const sizeEatBase = 256;
-      const sizeFcrBase = 0.1;
+      const sizeFcrBase = 0.25;
       const appetiteBase = 16;
 
       const ateAmount = this.cell.feed.amount * (1 - this.appetite / 100) / sizeEatBase;
@@ -251,7 +251,9 @@ class World {
   addFish() {
     for (let z = 0; z < this.z; z++) {
       for (let x = - this.x; x <= this.x; x++) {
-        new Fish(this, this.cells[x+"_"+z]);
+        if ((x % 2) * (z % 2) == 0) {
+          new Fish(this, this.cells[x+"_"+z]);
+        }
       }
     }
   }
@@ -412,6 +414,6 @@ class Feeder {
 const world = new World(10, 20);
 world.addFish();
 world.render();
-world.start(200);
+world.start(100);
 const feeder = new Feeder(world);
-feeder.feed(192, 65536, 5, 20);
+feeder.feed(192, 1024, 16, 192);
