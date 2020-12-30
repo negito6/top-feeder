@@ -42,11 +42,14 @@ class Feed {
   present() {
     return this.amount > 0;
   }
+  defused() {
+    return new Feed(new Cell(0, -1), this.amount * 0.1);
+  }
   remained() {
     return new Feed(new Cell(0, -1), this.amount * 0.1);
   }
   dropped() {
-    return new Feed(new Cell(0, -1), this.amount * 0.9);
+    return new Feed(new Cell(0, -1), this.amount * 0.7);
   }
 }
 class Cell {
@@ -151,8 +154,12 @@ class World {
       const currentFeed = cell.feed;
       future.cellAt(cell.x, cell.z).mergeFeed(cell.feed.remained());
 
-      const nextCell = future.cellAt(cell.x, cell.z + cell.feed.vz);
-      if (nextCell) nextCell.mergeFeed(cell.feed.dropped()); 
+      const bottomCell = future.cellAt(cell.x, cell.z + cell.feed.vz);
+      if (bottomCell) bottomCell.mergeFeed(cell.feed.dropped());
+      const rightCell = future.cellAt(cell.x + 1, cell.z);
+      if (rightCell) rightCell.mergeFeed(cell.feed.defused());
+      const leftCell = future.cellAt(cell.x - 1, cell.z);
+      if (leftCell) leftCell.mergeFeed(cell.feed.defused());
       cell.removeFeed(); 
     });
     this.eachCell((world: World, cell: Cell) => {
