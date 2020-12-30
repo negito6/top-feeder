@@ -42,6 +42,12 @@ class Feed {
   present() {
     return this.amount > 0;
   }
+  remained() {
+    return new Feed(new Cell(0, -1), this.amount * 0.1);
+  }
+  dropped() {
+    return new Feed(new Cell(0, -1), this.amount * 0.9);
+  }
 }
 class Cell {
   fish: Fish[];
@@ -63,6 +69,19 @@ class Cell {
   mergeFeed(feed: Feed) {
     this.feed.merge(feed);
   }
+
+  domId() {
+    return 'cell_' + this.x + '_' + this.z;
+  }
+
+  render() {
+    const td = document.getElementById(this.domId());
+    const maxFeedAtCell = 256;
+    if (td) {
+      td.style.background = 'rgba(128,64,64,' + (this.feed.amount / maxFeedAtCell).toString() + ')';
+      // td.innerHTML = this.feed.present() ? this.feed.amount.toString() : '';
+    }
+  }
 }
 class World {
   time: number;
@@ -83,6 +102,24 @@ class World {
       this.cells[x+"_"+z] = new Cell(x, z);
     }
     }
+    this.feedQueue = [
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 128),
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 128),
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 128),
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 128),
+      new Feed(new Cell(0, -1), 0),
+      new Feed(new Cell(0, -1), 128),
+      new Feed(new Cell(0, -1), 0),
+    ];
   }
 
   start() {
@@ -97,6 +134,7 @@ class World {
     this.survival();
     this.moveFeed();
     this.updateFish();
+    this.rerender();
   }
   survival() {
   }
@@ -108,6 +146,18 @@ class World {
       feed.cell.removeFeed(); 
       nextCell.mergeFeed(feed); 
     }
+    const future = new World(this.x, this.z);
+    this.eachCell((world: World, cell: Cell) => {
+      const currentFeed = cell.feed;
+      future.cellAt(cell.x, cell.z).mergeFeed(cell.feed.remained());
+
+      const nextCell = future.cellAt(cell.x, cell.z + cell.feed.vz);
+      if (nextCell) nextCell.mergeFeed(cell.feed.dropped()); 
+      cell.removeFeed(); 
+    });
+    this.eachCell((world: World, cell: Cell) => {
+      cell.mergeFeed(future.cellAt(cell.x, cell.z).feed); 
+    });
   }
   updateFish() {
   }
@@ -128,7 +178,7 @@ class World {
   eachCell(f: any) {
     for (let z = 0; z < this.z; z++) { 
       for (let x = - this.x; x < this.x; x++) { 
-        f(this.cellAt(x, z));
+        f(this, this.cellAt(x, z));
       }
     }
   }
@@ -138,11 +188,17 @@ class World {
     return new Cell(x, z);
   }
 
+  rerender() {
+    this.eachCell((world: World, cell: Cell) => {
+      cell.render();
+    });
+  }
+
   render() {
     let rows = [];
     for (let z = 0; z < this.z; z++) { 
       let cols = [];
-      for (let x = - this.x; x < this.x; x++) { 
+      for (let x = - this.x; x <= this.x; x++) { 
         cols.push('<td id="cell_' + this.cellId(x, z) + '"></td>');
       }
       rows.push('<tr>' + cols.join('') + '</tr>');
@@ -165,12 +221,12 @@ class Feeder {
     for (let i = 0; i < duration; i++) {
       if (running) {
         for (let j = 0; j < run; j++) {
-          this.world.addFeedQueue(new Feed(new Cell(-1, -1), amount));
+          this.world.addFeedQueue(new Feed(new Cell(0, -1), amount));
         }
         running = false;
       } else {
         for (let j = 0; j < pause; j++) {
-          this.world.addFeedQueue(new Feed(new Cell(-1, -1), 0));
+          this.world.addFeedQueue(new Feed(new Cell(0, -1), 0));
         }
         running = false;
       }
