@@ -122,6 +122,7 @@ class World {
   feedQueue: Feed[];
   x: number;
   z: number;
+  timer: number;
 
   constructor(_x: number, _z: number) {
     this.time = 0;
@@ -129,6 +130,7 @@ class World {
     this.feedQueue = [];
     this.x = _x;
     this.z = _z;
+    this.timer = 0;
 
     for (let x = - this.x; x <= this.x; x++) {
     for (let z = 0; z < this.z; z++) { 
@@ -140,14 +142,20 @@ class World {
       const fish = new Fish(cell);
     });
   }
+  stop() {
+    if (this.timer > 0) {
+      window.clearInterval(this.timer);
+      console.log("world stopped");
+    }
+  }
 
-  start() {
+  start(interval: number) {
     const world = this;
-    window.setInterval(() => {
+    this.timer = window.setInterval(() => {
       world.time++;
       console.log('time');
       world.process();
-    }, 100);
+    }, interval);
   }
   process() {
     this.survival();
@@ -271,6 +279,6 @@ class Feeder {
 
 const world = new World(10, 20);
 world.render();
-world.start();
+world.start(200);
 const feeder = new Feeder(world);
 feeder.feed(192, 65536, 5, 20);
