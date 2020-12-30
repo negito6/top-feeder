@@ -137,11 +137,18 @@ class World {
       this.cells[x+"_"+z] = new Cell(x, z);
     }
     }
-
-    this.eachCell((world: World, cell: Cell) => {
-      const fish = new Fish(cell);
-    });
   }
+  addFish() {
+    for (let z = 0; z < this.z; z++) {
+      for (let x = - this.x; x <= this.x; x++) {
+        new Fish(this, this.cells[x+"_"+z]);
+      }
+    }
+  }
+  future() {
+    return new World(this.x, this.z);
+  }
+
   stop() {
     if (this.timer > 0) {
       window.clearInterval(this.timer);
@@ -166,7 +173,7 @@ class World {
   survival() {
   }
   moveFeed() {
-    const future = new World(this.x, this.z);
+    const future = this.future();
     this.eachCell((world: World, cell: Cell) => {
       const currentFeed = cell.feed;
       future.cellAt(cell.x, cell.z).mergeFeed(cell.feed.remained());
