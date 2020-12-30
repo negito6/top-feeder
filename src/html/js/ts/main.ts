@@ -6,21 +6,50 @@ class Fish {
 
   constructor(cell: Cell) {
     this.cell = cell;
-    this.size = 1;
+    this.size = 1; // to 4
     this.appetite = 100;
     this.free = true;
+
+    cell.fish.push(this);
   }
 
   update() {
-    this.setDirection();
     this.move();
     this.eat();
   }
-  setDirection() {
-  }
   move() {
   }
+  fcr() {
+    return Math.sqrt(this.size);
+  }
   eat() {
+    if (this.cell.feed.present()) {
+      const sizeEatBase = 256;
+      const sizeFcrBase = 0.1;
+      const sizeMax = 4;
+
+      const ateAmount = this.cell.feed.amount * (1 - this.appetite / 100) / sizeEatBase;
+      this.cell.feed.merge(new Feed(this.cell, ateAmount));
+      this.size = this.size + sizeFcrBase * ateAmount / this.fcr();
+      this.appetite += ateAmount;
+    }
+    if (this.size > sizeMax) this.size = sizeMax;
+    if (this.appetite > 0) this.appetite -= 0.1;
+    if (this.appetite > 100) this.appetite = 100;
+  }
+  html() {
+    const hBase = 4;
+    const wBase = 8;
+    const wMax = 32;
+
+    return '<div style="margin-left: %{marginLeft}px; width: %{width}px; height: %{height}px; background: rgba(%{color},%{alpha})"></div>'
+             .replace(/%{width}/, (this.size * wBase).toString())
+             .replace(/%{height}/, (this.size * hBase).toString())
+             .replace(/%{color}/, "0,0,128")
+             .replace(/%{alpha}/, (this.appetite / 100).toString())
+             .replace(/%{marginLeft}/, (Math.random() * (wMax - this.size * wBase)).toString())
+             .replace(/%{marginTop}/, (Math.random() * 3).toString())
+             ;
   }
 }
 class Feed {
@@ -83,6 +112,7 @@ class Cell {
     if (td) {
       td.style.background = 'rgba(128,64,64,' + (this.feed.amount / maxFeedAtCell).toString() + ')';
       // td.innerHTML = this.feed.present() ? this.feed.amount.toString() : '';
+      if (this.fish.length > 0) td.innerHTML = this.fish[0].html();
     }
   }
 }
@@ -105,6 +135,10 @@ class World {
       this.cells[x+"_"+z] = new Cell(x, z);
     }
     }
+
+    this.eachCell((world: World, cell: Cell) => {
+      const fish = new Fish(cell);
+    });
   }
 
   start() {
@@ -113,7 +147,7 @@ class World {
       world.time++;
       console.log('time');
       world.process();
-    }, 500);
+    }, 100);
   }
   process() {
     this.survival();
@@ -151,6 +185,11 @@ class World {
     });
   }
   updateFish() {
+    this.eachCell((world: World, cell: Cell) => {
+      for (let i = 0, l = cell.fish.length; i < l; i++) {
+        cell.fish[i].update();
+      }
+    });
   }
 
   addFeedQueue(feed: Feed) {
@@ -234,4 +273,4 @@ const world = new World(10, 20);
 world.render();
 world.start();
 const feeder = new Feeder(world);
-feeder.feed(192, 30, 2, 2);
+feeder.feed(192, 65536, 5, 20);
