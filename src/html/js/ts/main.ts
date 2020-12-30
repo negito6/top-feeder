@@ -233,7 +233,7 @@ class Feeder {
         for (let j = 0; j < pause; j++) {
           this.world.addFeedQueue(new Feed(new Cell(0, -1), 0));
         }
-        running = false;
+        running = true;
       }
     }
   }
