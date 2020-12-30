@@ -23,10 +23,10 @@ class Fish {
     return Math.sqrt(this.size);
   }
   eat() {
+    const sizeMax = 4;
     if (this.cell.feed.present()) {
       const sizeEatBase = 256;
       const sizeFcrBase = 0.1;
-      const sizeMax = 4;
 
       const ateAmount = this.cell.feed.amount * (1 - this.appetite / 100) / sizeEatBase;
       this.cell.feed.merge(new Feed(this.cell, ateAmount));
