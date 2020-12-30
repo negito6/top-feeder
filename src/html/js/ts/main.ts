@@ -4,6 +4,10 @@ class Fish {
   size: number;
   appetite: number;
   free: boolean;
+  x: number;
+  z: number;
+  vx: number;
+  vz: number;
 
   constructor(world: World, cell: Cell) {
     this.world = world;
@@ -11,6 +15,10 @@ class Fish {
     this.size = 1; // to 4
     this.appetite = 100;
     this.free = true;
+    this.x = Math.random();
+    this.z = Math.random();
+    this.vx = parseInt((Math.random() * 2).toString()) * 2 - 1;
+    this.vz = parseInt((Math.random() * 2).toString()) * 2 - 1;
 
     cell.fish.push(this);
   }
@@ -20,64 +28,147 @@ class Fish {
     this.eat();
   }
   move(future: World) {
-    const d = [
-      [ 0, -1],
-      [ 0,  1],
-      [-1,  0],
-      [ 1,  0],
-    ];
-    const movable = [[0, 0]];
-    for (let i = 0, l = d.length; i < l; i++) {
-      if (future.cellAt(this.cell.x + d[i][0], this.cell.z + d[i][1])) {
-        movable.push(d[i]);
-      }
+    if (this.appetite < 0) {
+      // death
+      return;
     }
-    const rand = parseInt((Math.random() * movable.length).toString());
-    this.cell = this.world.cellAt(this.cell.x + movable[rand][0], this.cell.z + movable[rand][1]);
+
+    const boundaryRate = 0.1;
+
+    let tmpMaxFeed = this.cell.feed.amount;
+    const leftCell = this.world.cellAt(this.cell.x - 1, this.cell.z);
+    const rightCell = this.world.cellAt(this.cell.x + 1, this.cell.z);
+    if (!leftCell) {
+      if (this.x < this.speedX()) {
+        this.vx = 1;
+      }
+    } else if (!rightCell) {
+      if ((1 - this.speedX()) < this.x) {
+        this.vx = -1;
+      }
+    } else if (this.appetite < 70) {
+      if (tmpMaxFeed < leftCell.feed.amount) {
+        this.vx = -1;
+        tmpMaxFeed = leftCell.feed.amount;
+      }
+      if (tmpMaxFeed < rightCell.feed.amount) {
+        this.vx = 1;
+        tmpMaxFeed = rightCell.feed.amount;
+      }
+    } else if (this.vx == 0) {
+      this.vx = parseInt((Math.random() * 2).toString()) * 2 - 1;
+    }
+
+    tmpMaxFeed = this.cell.feed.amount;
+    const topCell = this.world.cellAt(this.cell.x, this.cell.z - 1);
+    const bottomCell = this.world.cellAt(this.cell.x, this.cell.z + 1);
+    if (!topCell) {
+      if (this.z < this.speedZ()) {
+        this.vz = 1;
+      }
+    } else if (!bottomCell) {
+      this.vz = -1;
+    } else if (this.appetite < 70) {
+      this.vz = 0;
+      if (tmpMaxFeed < topCell.feed.amount) {
+        this.vz = -1;
+        tmpMaxFeed = topCell.feed.amount;
+      }
+      if (tmpMaxFeed < bottomCell.feed.amount) {
+        this.vz = 1;
+        tmpMaxFeed = bottomCell.feed.amount;
+      }
+    } else if (this.vz == 0) {
+      this.vz = parseInt((Math.random() * 2).toString()) * 2 - 1;
+    }
+    this.x += this.vx * this.speedX();
+    this.z += this.vz * this.speedZ();
+
+    let diffCellX = 0;
+    if (this.x < boundaryRate) {
+      diffCellX -= 1;
+    } else if ((1 - boundaryRate) < this.x) {
+      diffCellX += 1;
+    }
+    const moveX = this.vx == diffCellX;
+    if (this.world.cellAt(this.cell.x + diffCellX, this.cell.z) && moveX) {
+      this.cell = this.world.cellAt(this.cell.x + diffCellX, this.cell.z);
+      this.x = 0.5 - diffCellX / 2;
+    } else {
+      this.x = Math.max(0, Math.min(1, this.x));
+    }
+
+    let diffCellZ = 0;
+    if (this.z < boundaryRate) {
+      diffCellZ -= 1;
+    } else if ((1 - boundaryRate) < this.z) {
+      diffCellZ += 1;
+    }
+    const moveZ = this.vz == diffCellZ;
+    if (this.world.cellAt(this.cell.x, this.cell.z + diffCellZ) && moveZ) {
+      this.cell = this.world.cellAt(this.cell.x, this.cell.z + diffCellZ);
+      this.z = 0.5 - diffCellZ / 2;
+    } else {
+      this.z = Math.max(0, Math.min(1, this.z));
+    }
+
     future.cellAt(this.cell.x, this.cell.z).addFish(this);
   }
   fcr() {
     return Math.sqrt(this.size);
   }
+  speedX() {
+    return this.size * 0.1;
+  }
+  speedZ() {
+    return this.size * 0.02;
+  }
   eat() {
-    const sizeMax = 4;
+    const sizeMax = 2;
     if (this.cell.feed.present()) {
       const sizeEatBase = 256;
       const sizeFcrBase = 0.1;
+      const appetiteBase = 16;
 
       const ateAmount = this.cell.feed.amount * (1 - this.appetite / 100) / sizeEatBase;
-      this.cell.feed.merge(new Feed(this.cell, ateAmount));
+      this.cell.feed.merge(new Feed(this.cell, - ateAmount));
       this.size = this.size + sizeFcrBase * ateAmount / this.fcr();
-      this.appetite += ateAmount;
+      this.appetite += ateAmount * appetiteBase;
     }
+    this.appetite -= 0.1;
     if (this.size > sizeMax) this.size = sizeMax;
-    if (this.appetite > 0) this.appetite -= 0.1;
     if (this.appetite > 100) this.appetite = 100;
   }
   html() {
     const hBase = 4;
     const wBase = 8;
+    const hMax = 32;
     const wMax = 32;
 
-    return '<div style="margin-left: %{marginLeft}px; width: %{width}px; height: %{height}px; background: rgba(%{color},%{alpha})"></div>'
-             .replace(/%{width}/, (this.size * wBase).toString())
-             .replace(/%{height}/, (this.size * hBase).toString())
+    const h = Math.sqrt(Math.sqrt(Math.sqrt(this.size))) * hBase;
+    const w = Math.sqrt(Math.sqrt(Math.sqrt(this.size))) * wBase;
+
+    return '<div style="margin-top: %{marginTop}px; margin-left: %{marginLeft}px; width: %{width}px; height: %{height}px; background: rgba(%{color},%{alpha}); position: absolute;"></div>'
+             .replace(/%{width}/, w.toString())
+             .replace(/%{height}/, h.toString())
              .replace(/%{color}/, "0,0,128")
              .replace(/%{alpha}/, (this.appetite / 100).toString())
-             .replace(/%{marginLeft}/, (Math.random() * (wMax - this.size * wBase)).toString())
-             .replace(/%{marginTop}/, (Math.random() * 3).toString())
+             .replace(/%{marginLeft}/, ((wMax - w) * this.x).toString())
+             .replace(/%{marginTop}/, ((hMax - h) * this.z).toString())
              ;
   }
 }
 class Feed {
   cell: Cell;
   vz: number;
+  vx: number;
   amount: number;
 
   constructor(cell: Cell, amount: number) {
     this.cell = cell;
-    this.vz = 1;
     this.amount = amount;
+    this.vz = 0.2;
+    this.vx = 0.05;
   }
   merge(feed: Feed) {
     this.amount += feed.amount;
@@ -89,13 +180,13 @@ class Feed {
     return this.amount > 0;
   }
   defused() {
-    return new Feed(new Cell(0, -1), this.amount * 0.1);
+    return new Feed(new Cell(0, -1), this.amount * this.vx);
   }
   remained() {
-    return new Feed(new Cell(0, -1), this.amount * 0.1);
+    return new Feed(new Cell(0, -1), this.amount * (1 - (2 * this.vx + this.vz)));
   }
   dropped() {
-    return new Feed(new Cell(0, -1), this.amount * 0.7);
+    return new Feed(new Cell(0, -1), this.amount * this.vz);
   }
 }
 class Cell {
@@ -197,7 +288,7 @@ class World {
       const currentFeed = cell.feed;
       future.cellAt(cell.x, cell.z).mergeFeed(cell.feed.remained());
 
-      const bottomCell = future.cellAt(cell.x, cell.z + cell.feed.vz);
+      const bottomCell = future.cellAt(cell.x, cell.z + 1);
       if (bottomCell) bottomCell.mergeFeed(cell.feed.dropped());
       const rightCell = future.cellAt(cell.x + 1, cell.z);
       if (rightCell) rightCell.mergeFeed(cell.feed.defused());
@@ -209,9 +300,9 @@ class World {
     const feed = this.feedQueue.shift();
     if (feed && feed.present()) {
       // TODO:
-      const droppedCell = future.cellAt(feed.cell.x, feed.cell.z + feed.vz);
+      const droppedCell = future.cellAt(feed.cell.x, 0);
       feed.cell.removeFeed();
-      droppedCell.mergeFeed(feed);
+      if (droppedCell) droppedCell.mergeFeed(feed);
     }
 
     this.eachCell((world: World, cell: Cell) => {
