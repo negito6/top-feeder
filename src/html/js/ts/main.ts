@@ -97,7 +97,7 @@ class World {
     this.x = _x;
     this.z = _z;
 
-    for (let x = - this.x; x < this.x; x++) { 
+    for (let x = - this.x; x <= this.x; x++) {
     for (let z = 0; z < this.z; z++) { 
       this.cells[x+"_"+z] = new Cell(x, z);
     }
@@ -177,7 +177,7 @@ class World {
   // TOOD:
   eachCell(f: any) {
     for (let z = 0; z < this.z; z++) { 
-      for (let x = - this.x; x < this.x; x++) { 
+      for (let x = - this.x; x <= this.x; x++) {
         f(this, this.cellAt(x, z));
       }
     }
