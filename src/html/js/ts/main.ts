@@ -399,11 +399,15 @@ class Feeder {
       if (running) {
         for (let j = 0; j < run; j++) {
           this.world.addFeedQueue(new Feed(new Cell(0, -1), amount));
+          i++;
+          if (i > duration) break;
         }
         running = false;
       } else {
         for (let j = 0; j < pause; j++) {
           this.world.addFeedQueue(new Feed(new Cell(0, -1), 0));
+          i++;
+          if (i > duration) break;
         }
         running = true;
       }
