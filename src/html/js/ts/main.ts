@@ -269,14 +269,16 @@ class World {
   }
 
   start(interval: number) {
+    this.stop();
+
     const world = this;
     this.timer = window.setInterval(() => {
       world.time++;
       console.log('time');
-      world.process();
+      world.step();
     }, interval);
   }
-  process() {
+  step() {
     this.survival();
     this.moveFeed();
     this.updateFish();
