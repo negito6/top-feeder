@@ -336,6 +336,10 @@ class World {
     });
   }
 
+  clearFeedQueue() {
+    this.feedQueue = [];
+  }
+
   addFeedQueue(feed: Feed) {
     this.feedQueue.push(feed);
   }
@@ -395,6 +399,8 @@ class Feeder {
   }
 
   feed(amount: number, duration: number, run: number, pause: number) {
+    this.world.clearFeedQueue();
+
     let running = true;
     let interval = 0;
     for (let i = 0; i < duration; i++) {
@@ -421,7 +427,6 @@ const world = new World(10, 20);
 world.addFish();
 world.render();
 const feeder = new Feeder(world);
-feeder.feed(192, 1024, 16, 192);
 
 function submitStart() {
   const inputInterval = document.getElementById("interval") as HTMLInputElement;
@@ -438,4 +443,28 @@ function submitStart() {
 }
 function submitStop() {
   world.stop();
+}
+function submitFeed() {
+  let params : { [key: string]: number; } = {};
+  const keys = ["amount", "duration", "run", "pause"];
+  for (let i = 0, l = keys.length; i < l; i++) {
+    const input = document.getElementById(keys[i]) as HTMLInputElement;
+    if (input) {
+      const value = input.value;
+      if (parseInt(value) > 0) {
+        params[keys[i]] = parseInt(value);
+      } else {
+        alert("Please set a numerical value");
+        return;
+      }
+    } else {
+      alert("try again");
+    }
+  }
+  const maxAmount = 256;
+  if (params.amount > maxAmount) {
+    alert("Amount is less than " + maxAmount);
+    return;
+  }
+  feeder.feed(params.amount, params.duration, params.run, params.pause);
 }
