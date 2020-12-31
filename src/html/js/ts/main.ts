@@ -420,6 +420,22 @@ class Feeder {
 const world = new World(10, 20);
 world.addFish();
 world.render();
-world.start(100);
 const feeder = new Feeder(world);
 feeder.feed(192, 1024, 16, 192);
+
+function submitStart() {
+  const inputInterval = document.getElementById("interval") as HTMLInputElement;
+  if (inputInterval) {
+    const interval = inputInterval.value;
+    if (parseInt(interval) > 0) {
+      world.start(parseInt(interval));
+    } else {
+      alert("Please set a numerical value");
+    }
+  } else {
+    alert("try again");
+  }
+}
+function submitStop() {
+  world.stop();
+}

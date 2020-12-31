@@ -6,7 +6,12 @@
 </head>
 <body>
     <script src="./js/dist/main.js"></script>
-    <div id="status"></div>
+    <div id="status">Time: 0, Fish: 0</div>
+    <div id="world-controller">
+        <input type="text" id="interval" value="100">
+        <button id="start" onclick="submitStart()">Start</button>
+        <button id="stop" onclick="submitStop()">Stop</button>
+    </div>
 
 </body>
 <style type="text/css">
