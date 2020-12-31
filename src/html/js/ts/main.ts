@@ -233,6 +233,7 @@ class World {
   x: number;
   z: number;
   timer: number;
+  totalFeed: number;
 
   constructor(_x: number, _z: number) {
     this.time = 0;
@@ -241,6 +242,7 @@ class World {
     this.x = _x;
     this.z = _z;
     this.timer = 0;
+    this.totalFeed = 0;
 
     for (let x = - this.x; x <= this.x; x++) {
     for (let z = 0; z < this.z; z++) {
@@ -284,7 +286,7 @@ class World {
     this.updateFish();
     this.rerender();
     const status = document.getElementById('status');
-    if (status) status.innerHTML = ['Time: ', this.time, ', Fish: ', this.count().toString()].join('');
+    if (status) status.innerHTML = ['Time: ', this.time, ', Fish: ', this.count().toString(), ', Feed: ', this.totalFeed].join('');
   }
   count() {
     let c = 0;
@@ -318,6 +320,7 @@ class World {
       const droppedCell = future.cellAt(feed.cell.x, 0);
       feed.cell.removeFeed();
       if (droppedCell) droppedCell.mergeFeed(feed);
+      this.totalFeed += feed.amount;
     }
 
     this.eachCell((world: World, cell: Cell) => {
