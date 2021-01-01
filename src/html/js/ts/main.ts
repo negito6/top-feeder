@@ -162,7 +162,7 @@ class Fish {
              .replace(/%{alpha}/, (this.appetite / 100).toString())
              .replace(/%{marginLeft}/, ((wMax - w) * this.x).toString())
              .replace(/%{marginTop}/, ((hMax - h) * this.z).toString())
-             .replace(/%{borderRadius}/,this.vx > 0 ? "0% 50% 20% 50%" : "50% 0% 50% 20%")
+             .replace(/%{borderRadius}/,this.vx > 0 ? "0% 90% 0% 90%" : "90% 0% 90% 0%")
              ;
   }
 }
