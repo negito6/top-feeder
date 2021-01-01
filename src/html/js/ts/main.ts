@@ -371,7 +371,7 @@ class World {
     });
 
     const sizeMax = 4;
-    const dSize = 0.3;
+    const dSize = 0.25;
     let fishAttr = [];
     for (let z = 0; z < this.z; z++) {
       for (let x = - this.x; x <= this.x; x++) {
@@ -387,14 +387,19 @@ class World {
 
     let trs = [];
     const dAppetite = 10;
+    let currentSize = 1;
     for (let i = 0, l = (sizeMax - 1) / dSize; i < l; i++) {
       let spans = [];
       for (let j = 0, m = 100 / dAppetite; j < m; j++) {
         let c = 0;
         for (let k = 0, n = fishAttr.length; k < n; k++) {
-          if (i == parseInt(((fishAttr[k][0] - 1) / dSize).toString()) && j == parseInt((fishAttr[k][1] / dAppetite).toString())) {
-            c++;
+          if (i != parseInt((parseInt((100 * fishAttr[k][0] - 100).toString()) / (100 * dSize)).toString())) {
+            continue;
           }
+          if (j != parseInt((fishAttr[k][1] / dAppetite).toString())) {
+            continue;
+          }
+          c++;
         }
         let span = '<span style="height: 10px; width: %{width}px; background: rgba(%{color},%{alpha}); display: inline-block;"></span>'
                      .replace(/%{width}/, c.toString())
@@ -403,8 +408,9 @@ class World {
                    ;
         spans.push(span);
       }
-      let tr = ['<tr><td>Size: ', parseInt((i * dSize * 10 + 10).toString()) / 10, '</td><td>', spans.join(""), '</td></tr>'].join('');
+      let tr = ['<tr><td>Size: ', currentSize.toString(), '</td><td>', spans.join(""), '</td></tr>'].join('');
       trs.push(tr);
+      currentSize += dSize;
     }
 
     const summary = document.getElementById('summary');
