@@ -419,6 +419,7 @@ class Game {
   cInitialTotalFish: number;
   goalFishNumber: number;
   goalFishSize: number;
+  finished: boolean;
 
   constructor() {
     this.world = new World(10, 20);
@@ -426,6 +427,7 @@ class Game {
     this.goalFishNumber = 0;
     this.goalFishSize = 0;
     this.cInitialTotalFish = 0;
+    this.finished = false;
   }
   setup(goalFishRate: number, goalFishSize: number) {
     this.world.addFish();
@@ -501,6 +503,10 @@ class Game {
       const summary = document.getElementById('summary');
       if (summary) summary.innerHTML = trs.join("");
 
+      if (this.finished) {
+        return;
+      }
+
       if (cTotal < game.goalFishNumber) {
         world.pause();
         game.gameover(cTotal);
@@ -554,6 +560,7 @@ class Game {
         ,
     ];
     document.getElementById("result-list")!.innerHTML = trs.join('');
+    this.finished = true;
   }
   feed() {
     let params : { [key: string]: number; } = {};
