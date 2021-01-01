@@ -416,6 +416,7 @@ class Feeder {
 class Game {
   feeder: Feeder;
   world: World;
+  cInitialTotalFish: number;
   goalFishNumber: number;
   goalFishSize: number;
 
@@ -424,18 +425,18 @@ class Game {
     this.feeder = new Feeder(this.world);
     this.goalFishNumber = 0;
     this.goalFishSize = 0;
+    this.cInitialTotalFish = 0;
   }
   setup(goalFishRate: number, goalFishSize: number) {
     this.world.addFish();
     this.goalFishSize = goalFishSize;
 
-    let totalCount = 0;
     for (let z = 0; z < this.world.z; z++) {
       for (let x = - this.world.x; x <= this.world.x; x++) {
-        totalCount += this.world.cellAt(x, z).fish.length;
+        this.cInitialTotalFish += this.world.cellAt(x, z).fish.length;
       }
     }
-    this.goalFishNumber = totalCount * goalFishRate;
+    this.goalFishNumber = this.cInitialTotalFish * goalFishRate;
 
     this.world.render();
   }
@@ -500,7 +501,10 @@ class Game {
       const summary = document.getElementById('summary');
       if (summary) summary.innerHTML = trs.join("");
 
-      if (cGoal > game.goalFishNumber) {
+      if (cTotal < game.goalFishNumber) {
+        world.pause();
+        game.gameover(cTotal);
+      } else if (cGoal > game.goalFishNumber) {
         world.pause();
 
         const mean = fishAttr.reduce((sum, attr) => sum + attr[0], 0) / cTotal;
@@ -525,6 +529,11 @@ class Game {
   start() {
     document.getElementById("welcome")!.style.display = 'none';
     this.run();
+  }
+  gameover(cTotal: number) {
+    document.getElementById("gameover-message")!.innerHTML = 'Too much motality %{ratePercent}%'.replace(/%{ratePercent}/, (100 - parseInt((100 * cTotal / this.cInitialTotalFish).toString())).toString());
+    document.getElementById("gameover")!.style.display = 'block';
+    this.finished = true;
   }
   finish(world: World, stddev: number) {
     document.getElementById("result")!.style.display = 'block';
@@ -594,5 +603,6 @@ function submitFeed() {
 }
 function submitCloseResult() {
   document.getElementById("result")!.style.display = 'none';
+  document.getElementById("gameover")!.style.display = 'none';
 }
 
