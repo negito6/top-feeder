@@ -7,9 +7,10 @@
 <body>
     <script src="./js/dist/main.js"></script>
 <div class="overlay" id="welcome">
-  <div id="welcome-content">
+  <div class="overlay-content">
     <h2>Welcome to Top Feeder !</h2>
-    <p>Use as little food as possible and grow 50% of the fish to size 3.</p>
+    <h3>ver 0.9.0</h3>
+    <p>Use as little food as possible and grow <span id="goal-fish-rate-percent">50</span>% of the fish to size <span id="goal-fish-size">3</span>.</p>
     <button onclick="submitStart()">Start</button>
   </div>
 </div>
@@ -34,6 +35,17 @@
   <table><tbody id="summary"></tbody></table>
 </div>
 <table><tbody id="cells"></tbody></table>
+
+<div class="overlay" id="result" style="display: none;">
+  <div class="overlay-content">
+    <h2>Finish !</h2>
+    <table style="width: 100%">
+      <tbody id="result-list">
+      </tbody>
+    </table>
+    <button onclick="submitCloseResult()">Close</button>
+  </div>
+</div>
 
 </body>
 <style type="text/css">
@@ -61,7 +73,7 @@ body {
   left: 0;
   height: 100%;
 }
-#welcome-content {
+.overlay-content {
   background: rgba(256,256,256,1);
   position: absolute;
   top: 25%;

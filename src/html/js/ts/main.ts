@@ -416,70 +416,105 @@ class Feeder {
 class Game {
   feeder: Feeder;
   world: World;
+  goalFishNumber: number;
+  goalFishSize: number;
 
   constructor() {
     this.world = new World(10, 20);
     this.feeder = new Feeder(this.world);
+    this.goalFishNumber = 0;
+    this.goalFishSize = 0;
   }
-  setup() {
+  setup(goalFishRate: number, goalFishSize: number) {
+    this.world.addFish();
+    this.goalFishSize = goalFishSize;
+
+    let totalCount = 0;
+    for (let z = 0; z < this.world.z; z++) {
+      for (let x = - this.world.x; x <= this.world.x; x++) {
+        totalCount += this.world.cellAt(x, z).fish.length;
+      }
+    }
+    this.goalFishNumber = totalCount * goalFishRate;
+
     this.world.render();
   }
   pause() {
     this.world.pause();
   }
-  worldCallback(world: World) {
+  createWorldCallback() {
+    const game = this;
+
     const sizeMax = 4;
     const dSize = 0.25;
-    let fishAttr = [];
-    for (let z = 0; z < world.z; z++) {
-      for (let x = - world.x; x <= world.x; x++) {
-        let fishInCell = world.cellAt(x, z).fish;
-        for (let i = 0, l = fishInCell.length; i < l; i++) {
-          fishAttr.push([fishInCell[i].size, fishInCell[i].appetite]);
+
+    return ((world: World) => {
+      let fishAttr = [];
+      let cGoal = 0;
+
+      for (let z = 0; z < world.z; z++) {
+        for (let x = - world.x; x <= world.x; x++) {
+          let fishInCell = world.cellAt(x, z).fish;
+          for (let i = 0, l = fishInCell.length; i < l; i++) {
+            fishAttr.push([fishInCell[i].size, fishInCell[i].appetite]);
+            if (fishInCell[i].size > game.goalFishSize) {
+              cGoal++;
+            }
+          }
         }
       }
-    }
+      const cTotal = fishAttr.length;
 
-    const status = document.getElementById('status');
-    if (status) status.innerHTML = [['Time', world.time], ['Fish', fishAttr.length.toString()], ['Feed', world.totalFeed]].map((h) => { return h[0] + ": " + h[1]; }).join('<br>');
+      const status = document.getElementById('status');
+      if (status) status.innerHTML = [['Time', world.time], ['Fish', cTotal.toString()], ['Feed', world.totalFeed]].map((h) => { return h[0] + ": " + h[1]; }).join('<br>');
 
-    let trs = [];
-    const dAppetite = 10;
-    let currentSize = 1;
-    for (let i = 0, l = (sizeMax - 1) / dSize; i < l; i++) {
-      let spans = [];
-      for (let j = 0, m = 100 / dAppetite; j < m; j++) {
-        let c = 0;
-        for (let k = 0, n = fishAttr.length; k < n; k++) {
-          if (i != parseInt((parseInt((100 * fishAttr[k][0] - 100).toString()) / (100 * dSize)).toString())) {
-            continue;
+      let trs = [];
+      const dAppetite = 10;
+      let currentSize = 1;
+
+      for (let i = 0, l = (sizeMax - 1) / dSize; i <= l; i++) {
+        let spans = [];
+        for (let j = 0, m = 100 / dAppetite; j < m; j++) {
+          let c = 0;
+          for (let k = 0; k < cTotal; k++) {
+            if (i != parseInt((parseInt((100 * fishAttr[k][0] - 100).toString()) / (100 * dSize)).toString())) {
+              continue;
+            }
+            if (j != parseInt((fishAttr[k][1] / dAppetite).toString())) {
+              continue;
+            }
+            c++;
           }
-          if (j != parseInt((fishAttr[k][1] / dAppetite).toString())) {
-            continue;
-          }
-          c++;
+          let span = '<span style="height: 10px; width: %{width}px; background: rgba(%{color},%{alpha}); display: inline-block;"></span>'
+                       .replace(/%{width}/, (c / 3.2).toString())
+                       .replace(/%{color}/, "0,0,128")
+                       .replace(/%{alpha}/, (j * dAppetite / 100).toString())
+                     ;
+          spans.push(span);
         }
-        let span = '<span style="height: 10px; width: %{width}px; background: rgba(%{color},%{alpha}); display: inline-block;"></span>'
-                     .replace(/%{width}/, (c / 3.2).toString())
-                     .replace(/%{color}/, "0,0,128")
-                     .replace(/%{alpha}/, (j * dAppetite / 100).toString())
-                   ;
-        spans.push(span);
+        let tr = ['<tr><td>Size: ', currentSize.toString(), '</td><td style="width: 100px;">', spans.join(""), '</td></tr>'].join('');
+        trs.push(tr);
+        currentSize += dSize;
       }
-      let tr = ['<tr><td>Size: ', currentSize.toString(), '</td><td style="width: 100px;">', spans.join(""), '</td></tr>'].join('');
-      trs.push(tr);
-      currentSize += dSize;
-    }
 
-    const summary = document.getElementById('summary');
-    if (summary) summary.innerHTML = trs.join("");
+      const summary = document.getElementById('summary');
+      if (summary) summary.innerHTML = trs.join("");
+
+      if (cGoal > game.goalFishNumber) {
+        world.pause();
+
+        const mean = fishAttr.reduce((sum, attr) => sum + attr[0], 0) / cTotal;
+        const stddev = Math.sqrt(fishAttr.map(attr => Math.pow(attr[0] - mean, 2)).reduce((sum, value) => sum + value, 0) / cTotal);
+        game.finish(world, stddev);
+      }
+    });
   }
   run() {
     const inputInterval = document.getElementById("fps") as HTMLInputElement;
     if (inputInterval) {
       const interval = inputInterval.value;
       if (parseInt(interval) > 0) {
-        this.world.run(1000 / parseInt(interval), this.worldCallback);
+        this.world.run(1000 / parseInt(interval), this.createWorldCallback());
       } else {
         alert("Please set a numerical value");
       }
@@ -489,8 +524,27 @@ class Game {
   }
   start() {
     document.getElementById("welcome")!.style.display = 'none';
-    this.world.addFish();
     this.run();
+  }
+  finish(world: World, stddev: number) {
+    document.getElementById("result")!.style.display = 'block';
+    const bestTime = 10000;
+    const bestTotalFeed = 320000;
+
+    const trs = [
+      '<tr><td style="text-align: right; width: 50%;">Time: </td><td style="text-align: left;">%{time-score}% (%{time})</td></tr>'
+        .replace(/%{time}/, this.world.time.toString())
+        .replace(/%{time-score}/, parseInt((100 * bestTime / this.world.time).toString()).toString())
+        ,
+      '<tr><td style="text-align: right; width: 50%;">Total Feed:</td><td style="text-align: left;"> %{feed-score}% (%{feed})</td></tr>'
+        .replace(/%{feed}/, world.totalFeed.toString())
+        .replace(/%{feed-score}/, parseInt((100 * bestTotalFeed / this.world.totalFeed).toString()).toString())
+        ,
+      '<tr><td style="text-align: right; width: 50%;">stddev: </td><td style="text-align: left;">%{stddev}</td></tr>'
+        .replace(/%{stddev}/, stddev.toString())
+        ,
+    ];
+    document.getElementById("result-list")!.innerHTML = trs.join('');
   }
   feed() {
     let params : { [key: string]: number; } = {};
@@ -520,7 +574,11 @@ class Game {
 const game = new Game();
 
 window.onload = () => {
-  game.setup();
+  const strGoalFishSize = document.getElementById('goal-fish-size')!.innerHTML;
+  const strGoalFishRatePercent = document.getElementById('goal-fish-rate-percent')!.innerHTML;
+  if (strGoalFishSize && strGoalFishRatePercent) {
+    game.setup(parseInt(strGoalFishRatePercent) / 100, parseFloat(strGoalFishSize));
+  }
 }
 function submitRun() {
   game.run();
@@ -533,5 +591,8 @@ function submitStart() {
 }
 function submitFeed() {
   game.feed();
+}
+function submitCloseResult() {
+  document.getElementById("result")!.style.display = 'none';
 }
 
