@@ -402,13 +402,13 @@ class World {
           c++;
         }
         let span = '<span style="height: 10px; width: %{width}px; background: rgba(%{color},%{alpha}); display: inline-block;"></span>'
-                     .replace(/%{width}/, c.toString())
+                     .replace(/%{width}/, (c / 3.2).toString())
                      .replace(/%{color}/, "0,0,128")
                      .replace(/%{alpha}/, (j * dAppetite / 100).toString())
                    ;
         spans.push(span);
       }
-      let tr = ['<tr><td>Size: ', currentSize.toString(), '</td><td>', spans.join(""), '</td></tr>'].join('');
+      let tr = ['<tr><td>Size: ', currentSize.toString(), '</td><td style="width: 100px;">', spans.join(""), '</td></tr>'].join('');
       trs.push(tr);
       currentSize += dSize;
     }
