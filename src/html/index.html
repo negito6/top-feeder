@@ -6,28 +6,32 @@
 </head>
 <body>
     <script src="./js/dist/main.js"></script>
+<h1>Top Feeder</h1>
 <div id="panel">
   <div id="world-controller">
-    <input type="text" id="interval" value="100">
+    Interval: <input size="10" type="text" id="interval" value="100"><br>
     <button id="start" onclick="submitStart()">Start</button>
     <button id="stop" onclick="submitStop()">Stop</button>
     <br>
-    <input type="text" id="amount" value="128">
-    <input type="text" id="duration" value="220">
-    <input type="text" id="run" value="10">
-    <input type="text" id="pause" value="30">
+
+    <br>
+    <h2>Feed</h2>
+    Amount (0-256) <input size="10" type="text" id="amount" value="128"><br>
+    Total: Duration <input size="10" type="text" id="duration" value="220"><br>
+    Run: <input size="10" type="text" id="run" value="10"><br>
+    Pause: <input size="10" type="text" id="pause" value="30"><br>
     <button id="feed" onclick="submitFeed()">Feed</button>
   </div>
-  <table>
-        <tbody id="summary">
-        </tbody>
-    </table>
 </div>
 <div id="status">Time: 0, Fish: 0</div>
 <table><tbody id="cells"></tbody></table>
+<table><tbody id="summary"></tbody></table>
 
 </body>
 <style type="text/css">
+body {
+  width: 1000px;
+}
 #panel {
   float: right;
 }
@@ -35,6 +39,9 @@
   border: 1px solid #000000;
   height: 32px;
   width: 32px;
+}
+#world-controller {
+  text-align: right;
 }
 </style>
 </html>
