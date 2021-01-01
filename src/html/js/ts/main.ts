@@ -370,15 +370,45 @@ class World {
       cell.render();
     });
 
-    let c = 0;
+    const sizeMax = 4;
+    const dSize = 0.3;
+    let fishAttr = [];
     for (let z = 0; z < this.z; z++) {
       for (let x = - this.x; x <= this.x; x++) {
-        c += this.cellAt(x, z).fish.length;
+        let fishInCell = this.cellAt(x, z).fish;
+        for (let i = 0, l = fishInCell.length; i < l; i++) {
+          fishAttr.push([fishInCell[i].size, fishInCell[i].appetite]);
+        }
       }
     }
 
     const status = document.getElementById('status');
-    if (status) status.innerHTML = ['Time: ', this.time, ', Fish: ', c.toString(), ', Feed: ', this.totalFeed].join('');
+    if (status) status.innerHTML = ['Time: ', this.time, ', Fish: ', fishAttr.length.toString(), ', Feed: ', this.totalFeed].join('');
+
+    let trs = [];
+    const dAppetite = 10;
+    for (let i = 0, l = (sizeMax - 1) / dSize; i < l; i++) {
+      let spans = [];
+      for (let j = 0, m = 100 / dAppetite; j < m; j++) {
+        let c = 0;
+        for (let k = 0, n = fishAttr.length; k < n; k++) {
+          if (i == parseInt(((fishAttr[k][0] - 1) / dSize).toString()) && j == parseInt((fishAttr[k][1] / dAppetite).toString())) {
+            c++;
+          }
+        }
+        let span = '<span style="height: 10px; width: %{width}px; background: rgba(%{color},%{alpha}); display: inline-block;"></span>'
+                     .replace(/%{width}/, c.toString())
+                     .replace(/%{color}/, "0,0,128")
+                     .replace(/%{alpha}/, (j * dAppetite / 100).toString())
+                   ;
+        spans.push(span);
+      }
+      let tr = ['<tr><td>Size: ', parseInt((i * dSize * 10 + 10).toString()) / 10, '</td><td>', spans.join(""), '</td></tr>'].join('');
+      trs.push(tr);
+    }
+
+    const summary = document.getElementById('summary');
+    if (summary) summary.innerHTML = trs.join("");
   }
 
   render() {
