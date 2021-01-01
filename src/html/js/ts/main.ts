@@ -181,9 +181,6 @@ class Feed {
   merge(feed: Feed) {
     this.amount += feed.amount;
   }
-  move() {
-
-  }
   present() {
     return this.amount > 0;
   }
@@ -208,8 +205,6 @@ class Cell {
     this.feed = new Feed(this, 0);
     this.x = x;
     this.z = z;
-  }
-  survival() {
   }
   removeFeed() {
     this.feed = new Feed(this, 0);
@@ -289,12 +284,9 @@ class World {
     }, interval);
   }
   step() {
-    this.survival();
     this.moveFeed();
     this.updateFish();
     this.rerender();
-  }
-  survival() {
   }
   moveFeed() {
     const future = this.future();
