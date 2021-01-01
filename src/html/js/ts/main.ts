@@ -292,17 +292,6 @@ class World {
     this.moveFeed();
     this.updateFish();
     this.rerender();
-    const status = document.getElementById('status');
-    if (status) status.innerHTML = ['Time: ', this.time, ', Fish: ', this.count().toString(), ', Feed: ', this.totalFeed].join('');
-  }
-  count() {
-    let c = 0;
-    for (let z = 0; z < this.z; z++) {
-      for (let x = - this.x; x <= this.x; x++) {
-        c += this.cellAt(x, z).fish.length;
-      }
-    }
-    return c;
   }
   survival() {
   }
@@ -380,6 +369,16 @@ class World {
     this.eachCell((world: World, cell: Cell) => {
       cell.render();
     });
+
+    let c = 0;
+    for (let z = 0; z < this.z; z++) {
+      for (let x = - this.x; x <= this.x; x++) {
+        c += this.cellAt(x, z).fish.length;
+      }
+    }
+
+    const status = document.getElementById('status');
+    if (status) status.innerHTML = ['Time: ', this.time, ', Fish: ', c.toString(), ', Feed: ', this.totalFeed].join('');
   }
 
   render() {
