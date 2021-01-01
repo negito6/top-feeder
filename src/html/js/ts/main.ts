@@ -155,13 +155,15 @@ class Fish {
     const h = Math.sqrt(this.size) * hBase;
     const w = Math.sqrt(this.size) * wBase;
 
-    return '<div style="margin-top: %{marginTop}px; margin-left: %{marginLeft}px; width: %{width}px; height: %{height}px; background: rgba(%{color},%{alpha}); position: absolute; border-radius: %{borderRadius}"></div>'
+    return '<div style="margin-top: %{marginTop}px; margin-left: %{marginLeft}px; width: %{width}px; height: %{height}px; background: rgba(%{color},%{alpha}); position: absolute; border-radius: %{borderRadius}">%{debug}</div>'
              .replace(/%{width}/, w.toString())
              .replace(/%{height}/, h.toString())
              .replace(/%{color}/, "0,0,128")
              .replace(/%{alpha}/, (this.appetite / 100).toString())
              .replace(/%{marginLeft}/, ((wMax - w) * this.x).toString())
              .replace(/%{marginTop}/, ((hMax - h) * this.z).toString())
+             // .replace(/%{debug}/, this.z.toString() + ' ' + this.vz.toString())
+             .replace(/%{debug}/, "")
              .replace(/%{borderRadius}/, (this.vx * this.vz > 0) ? "0% 90% 0% 90%" : "90% 0% 90% 0%")
              ;
   }
