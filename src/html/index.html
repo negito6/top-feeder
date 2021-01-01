@@ -6,20 +6,21 @@
 </head>
 <body>
     <script src="./js/dist/main.js"></script>
-    <div id="world-controller">
-        <input type="text" id="interval" value="100">
-        <button id="start" onclick="submitStart()">Start</button>
-        <button id="stop" onclick="submitStop()">Stop</button>
-        <br>
-        <input type="text" id="amount" value="128">
-        <input type="text" id="duration" value="220">
-        <input type="text" id="run" value="10">
-        <input type="text" id="pause" value="30">
-        <button id="feed" onclick="submitFeed()">Feed</button>
-    </div>
-    <table>
-    <tbody id="summary">
-    </tbody>
+<div id="panel">
+  <div id="world-controller">
+    <input type="text" id="interval" value="100">
+    <button id="start" onclick="submitStart()">Start</button>
+    <button id="stop" onclick="submitStop()">Stop</button>
+    <br>
+    <input type="text" id="amount" value="128">
+    <input type="text" id="duration" value="220">
+    <input type="text" id="run" value="10">
+    <input type="text" id="pause" value="30">
+    <button id="feed" onclick="submitFeed()">Feed</button>
+  </div>
+  <table>
+        <tbody id="summary">
+        </tbody>
     </table>
 </div>
 <div id="status">Time: 0, Fish: 0</div>
@@ -27,6 +28,9 @@
 
 </body>
 <style type="text/css">
+#panel {
+  float: right;
+}
 #cells tr td {
   border: 1px solid #000000;
   height: 32px;
