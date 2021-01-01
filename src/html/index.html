@@ -6,6 +6,14 @@
 </head>
 <body>
     <script src="./js/dist/main.js"></script>
+<div class="overlay" id="welcome">
+  <div id="welcome-content">
+    <h2>Welcome to Top Feeder !</h2>
+    <p>Use as little food as possible and grow 50% of the fish to size 3.</p>
+    <button onclick="submitStart()">Start</button>
+  </div>
+</div>
+
 <h1>Top Feeder</h1>
 <div id="panel">
   <div id="status"></div>
@@ -31,6 +39,7 @@
 <style type="text/css">
 body {
   width: 1000px;
+  margin: 0 auto;
 }
 #panel {
   float: right;
@@ -42,6 +51,23 @@ body {
 }
 #world-controller {
   text-align: right;
+}
+.overlay {
+  position: fixed;
+  background: rgba(0,0,0,0.5);
+  z-index: 16;
+  width: 100%;
+  top: 0;
+  left: 0;
+  height: 100%;
+}
+#welcome-content {
+  background: rgba(256,256,256,1);
+  position: absolute;
+  top: 25%;
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
 }
 </style>
 </html>

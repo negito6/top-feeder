@@ -516,3 +516,7 @@ function submitFeed() {
   }
   feeder.feed(params.amount, params.duration, params.run, params.pause);
 }
+function submitStart() {
+  document.getElementById("welcome")!.style.display = 'none';
+  submitRun();
+}
