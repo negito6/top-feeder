@@ -362,52 +362,6 @@ class World {
     this.eachCell((world: World, cell: Cell) => {
       cell.render();
     });
-
-    const sizeMax = 4;
-    const dSize = 0.25;
-    let fishAttr = [];
-    for (let z = 0; z < this.z; z++) {
-      for (let x = - this.x; x <= this.x; x++) {
-        let fishInCell = this.cellAt(x, z).fish;
-        for (let i = 0, l = fishInCell.length; i < l; i++) {
-          fishAttr.push([fishInCell[i].size, fishInCell[i].appetite]);
-        }
-      }
-    }
-
-    const status = document.getElementById('status');
-    if (status) status.innerHTML = [['Time', this.time], ['Fish', fishAttr.length.toString()], ['Feed', this.totalFeed]].map((h) => { return h[0] + ": " + h[1]; }).join('<br>');
-
-    let trs = [];
-    const dAppetite = 10;
-    let currentSize = 1;
-    for (let i = 0, l = (sizeMax - 1) / dSize; i < l; i++) {
-      let spans = [];
-      for (let j = 0, m = 100 / dAppetite; j < m; j++) {
-        let c = 0;
-        for (let k = 0, n = fishAttr.length; k < n; k++) {
-          if (i != parseInt((parseInt((100 * fishAttr[k][0] - 100).toString()) / (100 * dSize)).toString())) {
-            continue;
-          }
-          if (j != parseInt((fishAttr[k][1] / dAppetite).toString())) {
-            continue;
-          }
-          c++;
-        }
-        let span = '<span style="height: 10px; width: %{width}px; background: rgba(%{color},%{alpha}); display: inline-block;"></span>'
-                     .replace(/%{width}/, (c / 3.2).toString())
-                     .replace(/%{color}/, "0,0,128")
-                     .replace(/%{alpha}/, (j * dAppetite / 100).toString())
-                   ;
-        spans.push(span);
-      }
-      let tr = ['<tr><td>Size: ', currentSize.toString(), '</td><td style="width: 100px;">', spans.join(""), '</td></tr>'].join('');
-      trs.push(tr);
-      currentSize += dSize;
-    }
-
-    const summary = document.getElementById('summary');
-    if (summary) summary.innerHTML = trs.join("");
   }
 
   render() {
@@ -473,12 +427,59 @@ class Game {
   pause() {
     this.world.pause();
   }
+  worldCallback(world: World) {
+    const sizeMax = 4;
+    const dSize = 0.25;
+    let fishAttr = [];
+    for (let z = 0; z < world.z; z++) {
+      for (let x = - world.x; x <= world.x; x++) {
+        let fishInCell = world.cellAt(x, z).fish;
+        for (let i = 0, l = fishInCell.length; i < l; i++) {
+          fishAttr.push([fishInCell[i].size, fishInCell[i].appetite]);
+        }
+      }
+    }
+
+    const status = document.getElementById('status');
+    if (status) status.innerHTML = [['Time', world.time], ['Fish', fishAttr.length.toString()], ['Feed', world.totalFeed]].map((h) => { return h[0] + ": " + h[1]; }).join('<br>');
+
+    let trs = [];
+    const dAppetite = 10;
+    let currentSize = 1;
+    for (let i = 0, l = (sizeMax - 1) / dSize; i < l; i++) {
+      let spans = [];
+      for (let j = 0, m = 100 / dAppetite; j < m; j++) {
+        let c = 0;
+        for (let k = 0, n = fishAttr.length; k < n; k++) {
+          if (i != parseInt((parseInt((100 * fishAttr[k][0] - 100).toString()) / (100 * dSize)).toString())) {
+            continue;
+          }
+          if (j != parseInt((fishAttr[k][1] / dAppetite).toString())) {
+            continue;
+          }
+          c++;
+        }
+        let span = '<span style="height: 10px; width: %{width}px; background: rgba(%{color},%{alpha}); display: inline-block;"></span>'
+                     .replace(/%{width}/, (c / 3.2).toString())
+                     .replace(/%{color}/, "0,0,128")
+                     .replace(/%{alpha}/, (j * dAppetite / 100).toString())
+                   ;
+        spans.push(span);
+      }
+      let tr = ['<tr><td>Size: ', currentSize.toString(), '</td><td style="width: 100px;">', spans.join(""), '</td></tr>'].join('');
+      trs.push(tr);
+      currentSize += dSize;
+    }
+
+    const summary = document.getElementById('summary');
+    if (summary) summary.innerHTML = trs.join("");
+  }
   run() {
     const inputInterval = document.getElementById("fps") as HTMLInputElement;
     if (inputInterval) {
       const interval = inputInterval.value;
       if (parseInt(interval) > 0) {
-        this.world.run(1000 / parseInt(interval), () => {});
+        this.world.run(1000 / parseInt(interval), this.worldCallback);
       } else {
         alert("Please set a numerical value");
       }
