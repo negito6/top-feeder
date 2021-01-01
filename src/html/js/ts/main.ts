@@ -266,21 +266,21 @@ class World {
     return new World(this.x, this.z);
   }
 
-  stop() {
+  pause() {
     if (this.timer > 0) {
       window.clearInterval(this.timer);
       console.log("world stopped");
     }
   }
 
-  start(interval: number) {
-    this.stop();
+  run(interval: number, callback: any) {
+    this.pause();
 
     const world = this;
     this.timer = window.setInterval(() => {
       world.time++;
-      console.log('time');
       world.step();
+      callback(world);
     }, interval);
   }
   step() {
@@ -459,56 +459,78 @@ class Feeder {
     }
   }
 }
+class Game {
+  feeder: Feeder;
+  world: World;
 
-const world = new World(10, 20);
-world.addFish();
-const feeder = new Feeder(world);
-
-window.onload = () => {
-  world.render();
-}
-
-function submitRun() {
-  const inputInterval = document.getElementById("fps") as HTMLInputElement;
-  if (inputInterval) {
-    const interval = inputInterval.value;
-    if (parseInt(interval) > 0) {
-      world.start(1000 / parseInt(interval));
-    } else {
-      alert("Please set a numerical value");
-    }
-  } else {
-    alert("try again");
+  constructor() {
+    this.world = new World(10, 20);
+    this.feeder = new Feeder(this.world);
   }
-}
-function submitPause() {
-  world.stop();
-}
-function submitFeed() {
-  let params : { [key: string]: number; } = {};
-  const keys = ["amount", "duration", "run", "pause"];
-  for (let i = 0, l = keys.length; i < l; i++) {
-    const input = document.getElementById(keys[i]) as HTMLInputElement;
-    if (input) {
-      const value = input.value;
-      if (parseInt(value) > 0) {
-        params[keys[i]] = parseInt(value);
+  setup() {
+    this.world.render();
+  }
+  pause() {
+    this.world.pause();
+  }
+  run() {
+    const inputInterval = document.getElementById("fps") as HTMLInputElement;
+    if (inputInterval) {
+      const interval = inputInterval.value;
+      if (parseInt(interval) > 0) {
+        this.world.run(1000 / parseInt(interval), () => {});
       } else {
         alert("Please set a numerical value");
-        return;
       }
     } else {
       alert("try again");
     }
   }
-  const maxAmount = 256;
-  if (params.amount > maxAmount) {
-    alert("Amount is less than " + maxAmount);
-    return;
+  start() {
+    document.getElementById("welcome")!.style.display = 'none';
+    this.world.addFish();
+    this.run();
   }
-  feeder.feed(params.amount, params.duration, params.run, params.pause);
+  feed() {
+    let params : { [key: string]: number; } = {};
+    const keys = ["amount", "duration", "run", "pause"];
+    for (let i = 0, l = keys.length; i < l; i++) {
+      const input = document.getElementById(keys[i]) as HTMLInputElement;
+      if (input) {
+        const value = input.value;
+        if (parseInt(value) > 0) {
+          params[keys[i]] = parseInt(value);
+        } else {
+          alert("Please set a numerical value");
+          return;
+        }
+      } else {
+        alert("try again");
+      }
+    }
+    const maxAmount = 256;
+    if (params.amount > maxAmount) {
+      alert("Amount is less than " + maxAmount);
+      return;
+    }
+    this.feeder.feed(params.amount, params.duration, params.run, params.pause);
+  }
+}
+const game = new Game();
+
+window.onload = () => {
+  game.setup();
+}
+function submitRun() {
+  game.run();
+}
+function submitPause() {
+  game.pause();
 }
 function submitStart() {
-  document.getElementById("welcome")!.style.display = 'none';
-  submitRun();
+  game.start();
 }
+function submitFeed() {
+  game.feed();
+}
+
