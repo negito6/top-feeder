@@ -34,6 +34,7 @@ class Fish {
     }
 
     const boundaryRate = 0.1;
+    const upperLimitSearchFeed = 70;
 
     let tmpMaxFeed = this.cell.feed.amount;
     const leftCell = this.world.cellAt(this.cell.x - 1, this.cell.z);
@@ -46,7 +47,7 @@ class Fish {
       if ((1 - this.speedX()) < this.x) {
         this.vx = -1;
       }
-    } else if (this.appetite < 70) {
+    } else if (this.appetite < upperLimitSearchFeed) {
       if (tmpMaxFeed < leftCell.feed.amount) {
         this.vx = -1;
         tmpMaxFeed = leftCell.feed.amount;
@@ -68,7 +69,7 @@ class Fish {
       }
     } else if (!bottomCell) {
       this.vz = -1;
-    } else if (this.appetite < 70) {
+    } else if (this.appetite < upperLimitSearchFeed) {
       this.vz = 0;
       if (tmpMaxFeed < topCell.feed.amount) {
         this.vz = -1;
@@ -124,7 +125,11 @@ class Fish {
     return this.size * 0.02;
   }
   eat() {
-    const sizeMax = 2;
+    const sizeMax = 4;
+    const upperLimitSearchFeed = 70;
+    const lowerLimitGrow = 50 + upperLimitSearchFeed / 2;
+    const appetiteDecrease = 0.05;
+
     if (this.cell.feed.present()) {
       const sizeEatBase = 256;
       const sizeFcrBase = 0.25;
@@ -132,10 +137,12 @@ class Fish {
 
       const ateAmount = this.cell.feed.amount * (1 - this.appetite / 100) / sizeEatBase;
       this.cell.feed.merge(new Feed(this.cell, - ateAmount));
-      this.size = this.size + sizeFcrBase * ateAmount / this.fcr();
+      if (lowerLimitGrow > this.appetite) {
+        this.size = this.size + sizeFcrBase * ateAmount / this.fcr();
+      }
       this.appetite += ateAmount * appetiteBase;
     }
-    this.appetite -= 0.1;
+    this.appetite -= appetiteDecrease;
     if (this.size > sizeMax) this.size = sizeMax;
     if (this.appetite > 100) this.appetite = 100;
   }
@@ -145,8 +152,8 @@ class Fish {
     const hMax = 32;
     const wMax = 32;
 
-    const h = Math.sqrt(Math.sqrt(Math.sqrt(this.size))) * hBase;
-    const w = Math.sqrt(Math.sqrt(Math.sqrt(this.size))) * wBase;
+    const h = Math.sqrt(this.size) * hBase;
+    const w = Math.sqrt(this.size) * wBase;
 
     return '<div style="margin-top: %{marginTop}px; margin-left: %{marginLeft}px; width: %{width}px; height: %{height}px; background: rgba(%{color},%{alpha}); position: absolute;"></div>'
              .replace(/%{width}/, w.toString())
