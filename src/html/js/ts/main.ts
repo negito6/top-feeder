@@ -475,7 +475,7 @@ window.onload = () => {
   world.render();
 }
 
-function submitStart() {
+function submitRun() {
   const inputInterval = document.getElementById("fps") as HTMLInputElement;
   if (inputInterval) {
     const interval = inputInterval.value;
@@ -488,7 +488,7 @@ function submitStart() {
     alert("try again");
   }
 }
-function submitStop() {
+function submitPause() {
   world.stop();
 }
 function submitFeed() {

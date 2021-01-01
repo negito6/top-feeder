@@ -11,8 +11,8 @@
   <div id="status"></div>
   <div id="world-controller">
     FPS: <input size="10" type="text" id="fps" value="10"><br>
-    <button id="start" onclick="submitStart()">Start</button>
-    <button id="stop" onclick="submitStop()">Stop</button>
+    <button onclick="submitRun()">Run</button>
+    <button onclick="submitPause()">Pause</button>
     <br>
 
     <br>
@@ -21,7 +21,7 @@
     Total: Duration <input size="10" type="text" id="duration" value="1000"><br>
     Run: <input size="10" type="text" id="run" value="20"><br>
     Pause: <input size="10" type="text" id="pause" value="100"><br>
-    <button id="feed" onclick="submitFeed()">Feed</button>
+    <button onclick="submitFeed()">Feed</button>
   </div>
   <table><tbody id="summary"></tbody></table>
 </div>
