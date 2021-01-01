@@ -476,11 +476,11 @@ window.onload = () => {
 }
 
 function submitStart() {
-  const inputInterval = document.getElementById("interval") as HTMLInputElement;
+  const inputInterval = document.getElementById("fps") as HTMLInputElement;
   if (inputInterval) {
     const interval = inputInterval.value;
     if (parseInt(interval) > 0) {
-      world.start(parseInt(interval));
+      world.start(1000 / parseInt(interval));
     } else {
       alert("Please set a numerical value");
     }
