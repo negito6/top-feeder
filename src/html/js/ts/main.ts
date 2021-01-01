@@ -432,7 +432,6 @@ class World {
       rows.push('<tr>' + cols.join('') + '</tr>');
     }
 
-    document.body.innerHTML +='<table><tbody id="cells"></tbody></table>';
     let cells = document.getElementById("cells")
     if (cells) cells.innerHTML = rows.join("");
   }
@@ -470,8 +469,11 @@ class Feeder {
 
 const world = new World(10, 20);
 world.addFish();
-world.render();
 const feeder = new Feeder(world);
+
+window.onload = () => {
+  world.render();
+}
 
 function submitStart() {
   const inputInterval = document.getElementById("interval") as HTMLInputElement;
