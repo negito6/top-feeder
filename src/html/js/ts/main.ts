@@ -293,7 +293,6 @@ class World {
   moveFeed() {
     const future = this.future();
     this.eachCell((world: World, cell: Cell) => {
-      const currentFeed = cell.feed;
       future.cellAt(cell.x, cell.z).mergeFeed(cell.feed.remained());
 
       const bottomCell = future.cellAt(cell.x, cell.z + 1);
