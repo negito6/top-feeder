@@ -33,7 +33,7 @@ class Fish {
       return;
     }
 
-    const boundaryRate = 0.1;
+    const boundaryRateX = 0.05;
     const upperLimitSearchFeed = 70;
 
     let tmpMaxFeed = this.cell.feed.amount;
@@ -68,27 +68,26 @@ class Fish {
         this.vz = 1;
       }
     } else if (!bottomCell) {
-      this.vz = -1;
-    } else if (this.appetite < upperLimitSearchFeed) {
-      this.vz = 0;
-      if (tmpMaxFeed < topCell.feed.amount) {
+      if (this.z > 0.8) {
         this.vz = -1;
+      }
+    } else if (this.appetite < upperLimitSearchFeed) {
+      if (tmpMaxFeed < topCell.feed.amount) {
+        this.vz = Math.max(-1, this.vz - 1);
         tmpMaxFeed = topCell.feed.amount;
       }
-      if (tmpMaxFeed < bottomCell.feed.amount) {
-        this.vz = 1;
-        tmpMaxFeed = bottomCell.feed.amount;
-      }
-    } else if (this.vz == 0) {
+    } else if (this.vz == 0 && Math.random() < 0.5) {
       this.vz = parseInt((Math.random() * 2).toString()) * 2 - 1;
+    } else if (Math.random() < 0.1) {
+      this.vz *= -1;
     }
     this.x += this.vx * this.speedX();
     this.z += this.vz * this.speedZ();
 
     let diffCellX = 0;
-    if (this.x < boundaryRate) {
+    if (this.x < boundaryRateX) {
       diffCellX -= 1;
-    } else if ((1 - boundaryRate) < this.x) {
+    } else if ((1 - boundaryRateX) < this.x) {
       diffCellX += 1;
     }
     const moveX = this.vx == diffCellX;
@@ -99,10 +98,11 @@ class Fish {
       this.x = Math.max(0, Math.min(1, this.x));
     }
 
+    const boundaryRateZ = this.speedZ();
     let diffCellZ = 0;
-    if (this.z < boundaryRate) {
+    if (this.z < boundaryRateZ) {
       diffCellZ -= 1;
-    } else if ((1 - boundaryRate) < this.z) {
+    } else if ((1 - boundaryRateZ) < this.z) {
       diffCellZ += 1;
     }
     const moveZ = this.vz == diffCellZ;
@@ -161,7 +161,7 @@ class Fish {
              .replace(/%{color}/, "0,0,128")
              .replace(/%{alpha}/, (this.appetite / 100).toString())
              .replace(/%{marginLeft}/, ((wMax - w) * this.x).toString())
-             .replace(/%{marginTop}/, ((hMax - h) * this.z).toString())
+             .replace(/%{marginTop}/, ((hMax + h) * (this.z - 0.5)).toString())
              // .replace(/%{debug}/, this.z.toString() + ' ' + this.vz.toString())
              .replace(/%{debug}/, "")
              .replace(/%{borderRadius}/, (this.vx * this.vz > 0) ? "0% 90% 0% 90%" : "90% 0% 90% 0%")
