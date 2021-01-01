@@ -131,7 +131,7 @@ class Fish {
     const appetiteDecrease = 0.05;
 
     if (this.cell.feed.present()) {
-      const sizeEatBase = 256;
+      const sizeEatBase = 100;
       const sizeFcrBase = 0.25;
       const appetiteBase = 16;
 
@@ -223,7 +223,7 @@ class Cell {
 
   render() {
     const td = document.getElementById(this.domId());
-    const maxFeedAtCell = 256;
+    const maxFeedAtCell = 100;
     if (td) {
       td.style.background = 'rgba(128,64,64,' + (this.feed.amount / maxFeedAtCell).toString() + ')';
       // td.innerHTML = this.feed.present() ? this.feed.amount.toString() : '';
@@ -545,7 +545,7 @@ class Game {
   finish(world: World, stddev: number) {
     document.getElementById("result")!.style.display = 'block';
     const bestTime = 4000;
-    const bestTotalFeed = 16000;
+    const bestTotalFeed = 10000;
 
     const trs = [
       '<tr><td style="text-align: right; width: 50%;">Time: </td><td style="text-align: left;">%{time-score}% (%{time})</td></tr>'
@@ -580,7 +580,7 @@ class Game {
         alert("try again");
       }
     }
-    const maxAmount = 256;
+    const maxAmount = 100;
     if (params.amount > maxAmount) {
       alert("Amount is less than " + maxAmount);
       return;
