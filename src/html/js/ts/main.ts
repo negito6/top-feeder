@@ -383,7 +383,7 @@ class World {
     }
 
     const status = document.getElementById('status');
-    if (status) status.innerHTML = ['Time: ', this.time, ', Fish: ', fishAttr.length.toString(), ', Feed: ', this.totalFeed].join('');
+    if (status) status.innerHTML = [['Time', this.time], ['Fish', fishAttr.length.toString()], ['Feed', this.totalFeed]].map((h) => { return h[0] + ": " + h[1]; }).join('<br>');
 
     let trs = [];
     const dAppetite = 10;
