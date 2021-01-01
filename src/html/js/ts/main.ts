@@ -545,7 +545,7 @@ class Game {
   finish(world: World, stddev: number) {
     document.getElementById("result")!.style.display = 'block';
     const bestTime = 4000;
-    const bestTotalFeed = 10000;
+    const bestTotalFeed = 6500;
 
     const trs = [
       '<tr><td style="text-align: right; width: 50%;">Time: </td><td style="text-align: left;">%{time-score}% (%{time})</td></tr>'
