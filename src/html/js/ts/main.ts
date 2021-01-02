@@ -34,7 +34,8 @@ class Fish {
     }
 
     const boundaryRateX = 0.05;
-    const upperLimitSearchFeed = 70;
+    const upperLimitSearchFeedX = 50;
+    const upperLimitSearchFeedZ = 70;
 
     let tmpMaxFeed = this.cell.feed.amount;
     const leftCell = this.world.cellAt(this.cell.x - 1, this.cell.z);
@@ -47,7 +48,7 @@ class Fish {
       if ((1 - this.speedX()) < this.x) {
         this.vx = -1;
       }
-    } else if (this.appetite < upperLimitSearchFeed) {
+    } else if (this.appetite < upperLimitSearchFeedX) {
       if (tmpMaxFeed < leftCell.feed.amount) {
         this.vx = -1;
         tmpMaxFeed = leftCell.feed.amount;
@@ -60,7 +61,6 @@ class Fish {
       this.vx = parseInt((Math.random() * 2).toString()) * 2 - 1;
     }
 
-    tmpMaxFeed = this.cell.feed.amount;
     const topCell = this.world.cellAt(this.cell.x, this.cell.z - 1);
     const bottomCell = this.world.cellAt(this.cell.x, this.cell.z + 1);
     if (!topCell) {
@@ -71,7 +71,8 @@ class Fish {
       if (this.z > 0.8) {
         this.vz = -1;
       }
-    } else if (this.appetite < upperLimitSearchFeed) {
+    } else if (this.appetite < upperLimitSearchFeedZ) {
+      tmpMaxFeed = this.cell.feed.amount;
       if (tmpMaxFeed < topCell.feed.amount) {
         this.vz = Math.max(-1, this.vz - 1);
         tmpMaxFeed = topCell.feed.amount;
@@ -80,6 +81,15 @@ class Fish {
       this.vz = parseInt((Math.random() * 2).toString()) * 2 - 1;
     } else if (Math.random() < 0.1) {
       this.vz *= -1;
+    } else {
+      let tmpBusy = this.cell.fish.length;
+      if (tmpBusy > topCell.fish.length) {
+        this.vz = -1;
+        tmpBusy = topCell.fish.length;
+      }
+      if (tmpBusy > bottomCell.fish.length) {
+        this.vz = 1;
+      }
     }
     this.x += this.vx * this.speedX();
     this.z += this.vz * this.speedZ();
@@ -122,7 +132,7 @@ class Fish {
     return this.size * 0.1;
   }
   speedZ() {
-    return this.size * 0.02;
+    return this.size * 0.001 * (parseInt((Math.random() * (100 - this.appetite)).toString()) + 1);
   }
   eat() {
     const sizeMax = 4;
