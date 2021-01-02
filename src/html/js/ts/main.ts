@@ -266,12 +266,15 @@ class World {
     }
   }
   addFish() {
+    let debug = false;
     for (let z = 0; z < this.z; z++) {
       for (let x = - this.x; x <= this.x; x++) {
         if ((x % 2) * (z % 2) == 0) {
           new Fish(this, this.cells[x+"_"+z]);
+          if (debug) break;
         }
       }
+      if (debug) break;
     }
   }
   future() {
