@@ -33,9 +33,8 @@ class Fish {
       return;
     }
 
-    const boundaryRateX = 0.05;
-    const upperLimitSearchFeedX = 50;
-    const upperLimitSearchFeedZ = 70;
+    const upperLimitSearchFeedX = 30;
+    const upperLimitSearchFeedZ = 50;
 
     let tmpMaxFeed = this.cell.feed.amount;
     const leftCell = this.world.cellAt(this.cell.x - 1, this.cell.z);
@@ -48,14 +47,13 @@ class Fish {
       if ((1 - this.speedX()) < this.x) {
         this.vx = -1;
       }
-    } else if (this.appetite < upperLimitSearchFeedX) {
+    } else if (this.appetite < upperLimitSearchFeedX || Math.random() < (this.appetite - upperLimitSearchFeedX) / 100 * Math.abs(this.cell.x) / future.x) {
       if (tmpMaxFeed < leftCell.feed.amount) {
         this.vx = -1;
         tmpMaxFeed = leftCell.feed.amount;
       }
       if (tmpMaxFeed < rightCell.feed.amount) {
         this.vx = 1;
-        tmpMaxFeed = rightCell.feed.amount;
       }
     } else if (this.vx == 0) {
       this.vx = parseInt((Math.random() * 2).toString()) * 2 - 1;
@@ -76,24 +74,29 @@ class Fish {
       if (tmpMaxFeed < topCell.feed.amount) {
         this.vz = Math.max(-1, this.vz - 1);
         tmpMaxFeed = topCell.feed.amount;
+      // } else if (tmpMaxFeed < bottomCell.feed.amount) {
+      //   this.vz = Math.min(1, this.vz + 1);
+      } else if (Math.random() < 0.1) {
+        this.vz *= -1;
       }
     } else if (this.vz == 0 && Math.random() < 0.5) {
       this.vz = parseInt((Math.random() * 2).toString()) * 2 - 1;
     } else if (Math.random() < 0.1) {
       this.vz *= -1;
     } else {
-      let tmpBusy = this.cell.fish.length;
-      if (tmpBusy > topCell.fish.length) {
-        this.vz = -1;
-        tmpBusy = topCell.fish.length;
-      }
-      if (tmpBusy > bottomCell.fish.length) {
-        this.vz = 1;
-      }
+      // let tmpBusy = this.cell.fish.length;
+      // if (tmpBusy > topCell.fish.length) {
+      //   this.vz = -1;
+      //   tmpBusy = topCell.fish.length;
+      // }
+      // if (tmpBusy > bottomCell.fish.length) {
+      //   this.vz = 1;
+      // }
     }
     this.x += this.vx * this.speedX();
     this.z += this.vz * this.speedZ();
 
+    const boundaryRateX = this.speedX();
     let diffCellX = 0;
     if (this.x < boundaryRateX) {
       diffCellX -= 1;
@@ -132,25 +135,25 @@ class Fish {
     return this.size * 0.1;
   }
   speedZ() {
-    return this.size * 0.001 * (parseInt((Math.random() * (100 - this.appetite)).toString()) + 1);
+    return this.size * 0.02; // 01 * (parseInt((Math.random() * (100 - this.appetite)).toString()) + 1);
   }
   eat() {
     const sizeMax = 4;
     const upperLimitSearchFeed = 70;
-    const lowerLimitGrow = 50 + upperLimitSearchFeed / 2;
+    const lowerLimitGrow = upperLimitSearchFeed;
     const appetiteDecrease = 0.05;
 
     if (this.cell.feed.present()) {
-      const sizeEatBase = 100;
-      const sizeFcrBase = 0.25;
-      const appetiteBase = 16;
+      const sizeEatBase = 20;
+      const sizeFcrBase = 6;
+      const appetiteBase = 50;
 
       const ateAmount = this.cell.feed.amount * (1 - this.appetite / 100) / sizeEatBase;
       this.cell.feed.merge(new Feed(this.cell, - ateAmount));
-      if (lowerLimitGrow > this.appetite) {
-        this.size = this.size + sizeFcrBase * ateAmount / this.fcr();
-      }
       this.appetite += ateAmount * appetiteBase;
+      if (lowerLimitGrow < this.appetite) {
+        this.size = Math.pow(Math.pow(this.size, sizeFcrBase) + sizeFcrBase * ateAmount / this.fcr(), 1/sizeFcrBase);
+      }
     }
     this.appetite -= appetiteDecrease;
     if (this.size > sizeMax) this.size = sizeMax;
@@ -170,11 +173,12 @@ class Fish {
              .replace(/%{height}/, h.toString())
              .replace(/%{color}/, "0,0,128")
              .replace(/%{alpha}/, (this.appetite / 100).toString())
-             .replace(/%{marginLeft}/, ((wMax - w) * this.x).toString())
+             .replace(/%{marginLeft}/, ((wMax + w) * this.x).toString())
              .replace(/%{marginTop}/, ((hMax + h) * (this.z - 0.5)).toString())
              // .replace(/%{debug}/, this.z.toString() + ' ' + this.vz.toString())
              .replace(/%{debug}/, "")
              .replace(/%{borderRadius}/, (this.vx * this.vz > 0) ? "0% 90% 0% 90%" : "90% 0% 90% 0%")
+             // .replace(/%{borderRadius}/, "0%")
              ;
   }
 }
@@ -235,7 +239,8 @@ class Cell {
     const td = document.getElementById(this.domId());
     const maxFeedAtCell = 100;
     if (td) {
-      td.style.background = 'rgba(128,64,64,' + (this.feed.amount / maxFeedAtCell).toString() + ')';
+      const alpha = Math.sqrt(this.feed.amount / maxFeedAtCell);
+      td.style.background = 'rgba(128,64,64,' + alpha.toString() + ')';
       // td.innerHTML = this.feed.present() ? this.feed.amount.toString() : '';
       td.innerHTML = this.fish.map((f) => f.html()).join("");
     }
@@ -265,16 +270,19 @@ class World {
     }
     }
   }
-  addFish() {
-    let debug = false;
+  addFish(num: number) {
+    let c = 0;
+    const fishPerCell = num / (this.z * this.x);
     for (let z = 0; z < this.z; z++) {
       for (let x = - this.x; x <= this.x; x++) {
-        if ((x % 2) * (z % 2) == 0) {
+        for (let i = 0; i < fishPerCell; i++) {
           new Fish(this, this.cells[x+"_"+z]);
-          if (debug) break;
+          c++;
+          if (c >= num) break;
         }
+        if (c >= num) break;
       }
-      if (debug) break;
+      if (c >= num) break;
     }
   }
   future() {
@@ -443,15 +451,10 @@ class Game {
     this.cInitialTotalFish = 0;
     this.finished = false;
   }
-  setup(goalFishRate: number, goalFishSize: number) {
-    this.world.addFish();
+  setup(cInitialTotalFish: number, goalFishRate: number, goalFishSize: number) {
+    this.cInitialTotalFish = cInitialTotalFish;
+    this.world.addFish(this.cInitialTotalFish);
     this.goalFishSize = goalFishSize;
-
-    for (let z = 0; z < this.world.z; z++) {
-      for (let x = - this.world.x; x <= this.world.x; x++) {
-        this.cInitialTotalFish += this.world.cellAt(x, z).fish.length;
-      }
-    }
     this.goalFishNumber = this.cInitialTotalFish * goalFishRate;
 
     this.world.render();
@@ -503,7 +506,7 @@ class Game {
             c++;
           }
           let span = '<span style="height: 10px; width: %{width}px; background: rgba(%{color},%{alpha}); display: inline-block;"></span>'
-                       .replace(/%{width}/, (c / 3.2).toString())
+                       .replace(/%{width}/, (c * 100 / game.cInitialTotalFish).toString())
                        .replace(/%{color}/, "0,0,128")
                        .replace(/%{alpha}/, (j * dAppetite / 100).toString())
                      ;
@@ -557,8 +560,8 @@ class Game {
   }
   finish(world: World, stddev: number) {
     document.getElementById("result")!.style.display = 'block';
-    const bestTime = 4000;
-    const bestTotalFeed = 6500;
+    const bestTime = 5400;
+    const bestTotalFeed = 8200;
 
     const trs = [
       '<tr><td style="text-align: right; width: 50%;">Time: </td><td style="text-align: left;">%{time-score}% (%{time})</td></tr>'
@@ -607,7 +610,7 @@ window.onload = () => {
   const strGoalFishSize = document.getElementById('goal-fish-size')!.innerHTML;
   const strGoalFishRatePercent = document.getElementById('goal-fish-rate-percent')!.innerHTML;
   if (strGoalFishSize && strGoalFishRatePercent) {
-    game.setup(parseInt(strGoalFishRatePercent) / 100, parseFloat(strGoalFishSize));
+    game.setup(5, parseInt(strGoalFishRatePercent) / 100, parseFloat(strGoalFishSize));
   }
 }
 function submitRun() {
